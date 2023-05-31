@@ -59,15 +59,19 @@ def run_mqtt_client():
     client.on_message = on_message
 
     # Configure SSL/TLS with the server certificate
-    client.tls_set("mosquitto.org.crt")  # Replace with the path to your server certificate
+    client.tls_set("mosquitto.org.crt", tls_version=ssl.PROTOCOL_TLSv1_2)  # Replace with the path to your server certificate
 
+    # Allow insecure connections (optional, only for testing purposes)
+    client.tls_insecure_set(True)
+    
     # Set username and password
     client.username_pw_set(username='ditto', password='ditto')
 
     # Get the IP address of the MQTT broker
     broker_ip = socket.gethostbyname("mosquitto")
-
+    
     # Connect to the MQTT broker
+    print("Connecting to broker")
     client.connect(broker_ip, MQTT_BROKER_PORT, 60)
 
     # Start the MQTT client loop in a non-blocking manner
