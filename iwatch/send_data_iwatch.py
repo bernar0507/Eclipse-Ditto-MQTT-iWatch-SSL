@@ -2,7 +2,6 @@ import paho.mqtt.client as mqtt
 import json
 import iwatch_simulator
 import time
-import os
 import socket
 
 # Replace with your own values
@@ -12,6 +11,8 @@ MQTT_TOPIC = f"{THING_ID}/things/twin/commands/modify"
 
 def on_connect(client, userdata, flags, rc):
     print("Connected to MQTT broker with result code " + str(rc))
+    # Subscribe to the MQTT topic
+    client.subscribe(MQTT_TOPIC)
 
 def on_disconnect(client, userdata, rc):
     print("Disconnected from MQTT broker with result code " + str(rc))
@@ -23,30 +24,6 @@ def on_message(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload))
 
 def send_data_to_ditto(iwatch_data):
-    # Create a MQTT client instance
-    client = mqtt.Client()
-
-    # Set the callbacks
-    client.on_connect = on_connect
-    client.on_disconnect = on_disconnect
-    client.on_publish = on_publish
-    client.on_message = on_message
-
-    # Configure SSL/TLS with the server certificate
-    client.tls_set("mosquitto.org.crt")  # Replace with the path to your server certificate
-
-    # Set username and password
-    client.username_pw_set(username='ditto', password='ditto')
-
-    # Get the IP address of the MQTT broker
-    broker_ip = socket.gethostbyname("mosquitto")
-
-    # Connect to the MQTT broker
-    client.connect(broker_ip, MQTT_BROKER_PORT, 60)
-
-    # Subscribe to the MQTT topic
-    client.subscribe(MQTT_TOPIC)
-
     # Prepare the Ditto command payload
     ditto_data = {
         "topic": MQTT_TOPIC,
@@ -69,16 +46,36 @@ def send_data_to_ditto(iwatch_data):
     # Publish the message to the MQTT topic
     client.publish(MQTT_TOPIC, payload=ditto_data_str)
 
-    # Disconnect from the MQTT broker
-    client.disconnect()
-
     print("Data sent to Ditto: " + json.dumps(ditto_data))
 
+def run_mqtt_client():
+    # Create an MQTT client instance
+    client = mqtt.Client()
 
-properties = ['heart_rate', 'timestamp', 'longitude', 'latitude']
-dict_dt = {property: None for property in properties}
-# Example usage
-while True:
-    iwatch_data = next(iwatch_simulator.iwatch(dict_dt))
-    send_data_to_ditto(iwatch_data)
-    time.sleep(1)
+    # Set the callbacks
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    client.on_publish = on_publish
+    client.on_message = on_message
+
+    # Configure SSL/TLS with the server certificate
+    client.tls_set("mosquitto.org.crt")  # Replace with the path to your server certificate
+
+    # Set username and password
+    client.username_pw_set(username='ditto', password='ditto')
+
+    # Get the IP address of the MQTT broker
+    broker_ip = socket.gethostbyname("mosquitto")
+
+    # Connect to the MQTT broker
+    client.connect(broker_ip, MQTT_BROKER_PORT, 60)
+
+    # Start the MQTT client loop in a non-blocking manner
+    client.loop_start()
+
+    while True:
+        iwatch_data = next(iwatch_simulator.iwatch(dict_dt))
+        send_data_to_ditto(iwatch_data)
+        time.sleep(1)
+
+run_mqtt_client()
