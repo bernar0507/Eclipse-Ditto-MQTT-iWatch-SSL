@@ -4,7 +4,6 @@ import iwatch_simulator
 import time
 import os
 import socket
-import ssl
 
 # Replace with your own values
 MQTT_BROKER_PORT = 8883  # SSL/TLS port
@@ -20,11 +19,10 @@ def on_disconnect(client, userdata, rc):
 def on_publish(client, userdata, mid):
     print("Message published to " + MQTT_TOPIC)
 
-def send_data_to_ditto(iwatch_data):
-    # Set up the SSL/TLS context
-    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    ssl_context.load_cert_chain(certfile="broker.crt")  # Replace with the path to your certificate file
+def on_message(client, userdata, msg):
+    print(msg.topic + " " + str(msg.payload))
 
+def send_data_to_ditto(iwatch_data):
     # Create a MQTT client instance
     client = mqtt.Client()
 
@@ -32,30 +30,36 @@ def send_data_to_ditto(iwatch_data):
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_publish = on_publish
-    
-    # Configure SSL/TLS
-    client.tls_set_context(ssl_context)
-    
+    client.on_message = on_message
+
+    # Configure SSL/TLS with the server certificate
+    client.tls_set("mosquitto.org.crt")  # Replace with the path to your server certificate
+
+    # Set username and password
+    client.username_pw_set(username='ditto', password='ditto')
+
     # Get the IP address of the MQTT broker
     broker_ip = socket.gethostbyname("mosquitto")
 
     # Connect to the MQTT broker
-    client.username_pw_set(username='ditto', password='ditto')
     client.connect(broker_ip, MQTT_BROKER_PORT, 60)
+
+    # Subscribe to the MQTT topic
+    client.subscribe(MQTT_TOPIC)
 
     # Prepare the Ditto command payload
     ditto_data = {
-        "topic": "org.Iotp2c/iwatch/things/twin/commands/modify",
+        "topic": MQTT_TOPIC,
         "path": "/",
-        "value":{
-          "thingId":"org.Iotp2c:iwatch",
-          "policyId":"org.Iotp2c:policy",
-          "definition":"https://raw.githubusercontent.com/bernar0507/Eclipse-Ditto-MQTT-iWatch/main/iwatch/wot/iwatch.tm.jsonld",
-            "attributes":{
-              "heart_rate":iwatch_data['heart_rate'],
-              "timestamp":iwatch_data['timestamp'],
-              "longitude":iwatch_data['longitude'],
-              "latitude":iwatch_data['latitude']
+        "value": {
+            "thingId": "org.Iotp2c:iwatch",
+            "policyId": "org.Iotp2c:policy",
+            "definition": "https://raw.githubusercontent.com/bernar0507/Eclipse-Ditto-MQTT-iWatch/main/iwatch/wot/iwatch.tm.jsonld",
+            "attributes": {
+                "heart_rate": iwatch_data['heart_rate'],
+                "timestamp": iwatch_data['timestamp'],
+                "longitude": iwatch_data['longitude'],
+                "latitude": iwatch_data['latitude']
             }
         }
     }
