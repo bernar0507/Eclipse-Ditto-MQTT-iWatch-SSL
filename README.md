@@ -6,7 +6,7 @@ This example presents how to configure Ditto to be able update things via MQTT w
 
 2. Pull Mosquitto: ```docker pull eclipse-mosquitto```
 
-3. Clone Eclipse-Ditto-MQTT-iWatch: ```git clone https://github.com/bernar0507/Eclipse-Ditto-MQTT-iWatch.git```
+3. Clone Eclipse-Ditto-MQTT-iWatch: ```git clone https://github.com/bernar0507/Eclipse-Ditto-MQTT-iWatch-SSL.git```
 
 # Start Ditto and Mosquitto
 
