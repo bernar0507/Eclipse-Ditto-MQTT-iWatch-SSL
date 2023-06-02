@@ -3,6 +3,7 @@ import json
 import iwatch_simulator
 import time
 import socket
+import ssl
 
 # Replace with your own values
 MQTT_BROKER_PORT = 8883  # SSL/TLS port
@@ -58,18 +59,18 @@ def run_mqtt_client():
     client.on_publish = on_publish
     client.on_message = on_message
 
-    # Configure SSL/TLS with the server certificate
-    client.tls_set("mosquitto.org.crt", tls_version=ssl.PROTOCOL_TLSv1_2)  # Replace with the path to your server certificate
+    # Load the self-signed certificate for verification
+    client.tls_set("path/to/self_signed_certificate.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
 
     # Allow insecure connections (optional, only for testing purposes)
     client.tls_insecure_set(True)
-    
+
     # Set username and password
     client.username_pw_set(username='ditto', password='ditto')
 
     # Get the IP address of the MQTT broker
     broker_ip = socket.gethostbyname("mosquitto")
-    
+
     # Connect to the MQTT broker
     print("Connecting to broker")
     client.connect(broker_ip, MQTT_BROKER_PORT, 60)
