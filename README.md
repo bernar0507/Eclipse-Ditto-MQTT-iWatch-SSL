@@ -120,7 +120,9 @@ curl -X POST \
             "connectionType": "mqtt",
             "connectionStatus": "open",
             "failoverEnabled": true,
-            "uri": "tcp://ditto:ditto@'"$mosquitto_ip"':1883",
+            "uri": "ssl://ditto:ditto@'"$mosquitto_ip"':8883",
+            "validateCertificates": true,
+            "ca": "-----BEGIN CERTIFICATE-----\n<trusted certificate>\n-----END CERTIFICATE-----",
             "sources": [{
                 "addresses": ["org.Iotp2c:iwatch/things/twin/commands/modify"],
                 "authorizationContext": ["nginx:ditto"],
