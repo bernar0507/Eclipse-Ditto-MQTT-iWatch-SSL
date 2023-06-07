@@ -24,7 +24,7 @@ def on_publish(client, userdata, mid):
 def on_message(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload))
 
-def send_data_to_ditto(iwatch_data):
+def send_data_to_ditto(iwatch_data, client):
     # Prepare the Ditto command payload
     ditto_data = {
         "topic": MQTT_TOPIC,
@@ -59,14 +59,19 @@ def run_mqtt_client():
     client.on_publish = on_publish
     client.on_message = on_message
 
-    # Load the self-signed certificate for verification
-    client.tls_set("path/to/self_signed_certificate.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
-
-    # Allow insecure connections (optional, only for testing purposes)
-    client.tls_insecure_set(True)
-
     # Set username and password
-    client.username_pw_set(username='ditto', password='ditto')
+    client.username_pw_set(username="ditto", password="ditto")
+
+    # Set client certificate and key (if required by the MQTT broker)
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+
+    # Load the self-signed certificate for verification
+    client.tls_set( ca_certs="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/certs/ca.crt"
+                  , certfile="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/certs/client.crt"
+                  , keyfile="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/certs/client.key"
+                  , tls_version=ssl.PROTOCOL_TLSv1_2)
+    
+    client.tls_insecure_set(True)
 
     # Get the IP address of the MQTT broker
     broker_ip = socket.gethostbyname("mosquitto")
@@ -77,10 +82,13 @@ def run_mqtt_client():
 
     # Start the MQTT client loop in a non-blocking manner
     client.loop_start()
-
+    
+    properties = ['heart_rate', 'timestamp', 'longitude', 'latitude']
+    dict_dt = {property: None for property in properties}
+    
     while True:
         iwatch_data = next(iwatch_simulator.iwatch(dict_dt))
-        send_data_to_ditto(iwatch_data)
+        send_data_to_ditto(iwatch_data, client)
         time.sleep(1)
 
 run_mqtt_client()
