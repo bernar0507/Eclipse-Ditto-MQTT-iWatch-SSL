@@ -29,7 +29,7 @@ docker compose up -d
 
 ### Mosquitto: 
 ```
-docker run -it --name mosquitto --network docker_default   -p 8883:8883   -v $(pwd)/mosquitto:/mosquitto/   eclipse-mosquitto   mosquitto -c /mosquitto/config/mosquitto.conf
+docker run -it --name mosquitto --network docker_default -p 8883:8883 -v $(pwd)/mosquitto:/mosquitto/   eclipse-mosquitto   mosquitto -c /mosquitto/config/mosquitto.conf
 ```
 
 # Create the Policy
@@ -79,19 +79,6 @@ curl --location --request PUT -u ditto:ditto 'http://localhost:8080/api/2/things
   }'
 ```
 
--------------------------------
--------------------------------
--------------------------------
-# Need to update the connection
-# Need to update the connection
-# Need to update the connection
-# Need to update the connection
-# Need to update the connection
-# Need to update the connection
--------------------------------
--------------------------------
--------------------------------
-
 # Create a MQTT Connection
 We need to get the Mosquitto Ip Adress from the container running Mosquitto. 
 For that we need to use this to get the container ip:
@@ -116,29 +103,34 @@ curl -X POST \
     "piggybackCommand": {
         "type": "connectivity.commands:createConnection",
         "connection": {
-            "id": "mqtt-connection-iwatch",
-            "connectionType": "mqtt",
-            "connectionStatus": "open",
-            "failoverEnabled": true,
-            "uri": "ssl://ditto:ditto@'"$mosquitto_ip"':8883",
-            "validateCertificates": true,
-            "ca": "-----BEGIN CERTIFICATE-----\n<trusted certificate>\n-----END CERTIFICATE-----",
-            "sources": [{
+  "id": "mqtt-connection-iwatch",
+  "connectionType": "mqtt",
+  "connectionStatus": "open",
+  "failoverEnabled": true,
+  "uri": "ssl://ditto:ditto@'"$mosquitto_ip"':8883",
+  "validateCertificates": true,
+  "ca": "-----BEGIN CERTIFICATE-----\n<CA_CERT>\n-----END CERTIFICATE-----",
+  "credentials": {
+    "type": "client-cert",
+    "cert": "-----BEGIN CERTIFICATE-----\n<CLIENT_CERT>\n-----END CERTIFICATE-----",
+    "key": "-----BEGIN PRIVATE KEY-----\n<CLIENT_KEY>\n-----END PRIVATE KEY-----"
+  },
+  "sources": [{
                 "addresses": ["org.Iotp2c:iwatch/things/twin/commands/modify"],
                 "authorizationContext": ["nginx:ditto"],
                 "qos": 0,
                 "filters": []
             }],
-            "targets": [{
+  "targets": [{
                 "address": "org.Iotp2c:iwatch/things/twin/events/modified",
                 "topics": [
-                "_/_/things/twin/events",
-                "_/_/things/live/messages"
+                "//things/twin/events",
+                "//things/live/messages"
                 ],
                 "authorizationContext": ["nginx:ditto"],
                 "qos": 0
             }]
-        }
+	}
     }
 }'
 ```
