@@ -59,25 +59,21 @@ def run_mqtt_client():
     client.on_publish = on_publish
     client.on_message = on_message
 
-    # Set username and password
-    client.username_pw_set(username="ditto", password="ditto")
-
     # Set client certificate and key (if required by the MQTT broker)
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 
     # Load the self-signed certificate for verification
-    client.tls_set( ca_certs="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/certs/ca.crt"
-                  , certfile="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/certs/client.crt"
-                  , keyfile="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/certs/client.key"
+    client.tls_set( ca_certs="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/config/ca.crt"
+                  , certfile="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/config/client.crt"
+                  , keyfile="/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/config/client.pk8"
                   , tls_version=ssl.PROTOCOL_TLSv1_2)
     
-    client.tls_insecure_set(True)
-
     # Get the IP address of the MQTT broker
     broker_ip = socket.gethostbyname("mosquitto")
 
     # Connect to the MQTT broker
     print("Connecting to broker")
+    client.username_pw_set(username='ditto', password='ditto')
     client.connect(broker_ip, MQTT_BROKER_PORT, 60)
 
     # Start the MQTT client loop in a non-blocking manner
