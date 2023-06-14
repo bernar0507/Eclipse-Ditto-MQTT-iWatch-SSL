@@ -79,6 +79,89 @@ curl --location --request PUT -u ditto:ditto 'http://localhost:8080/api/2/things
   }'
 ```
 
+# Create the certificates and get them signed
+So for this tutorial we are gonna use self-signed certificates. We need to create certificates on the broker and client side.
+We also need a CA (Certificate Authority) to sign the broker certificate and client certificates, so that the broker can trust the client, and the client can trust the broker.
+
+* First step: Get inside the mosquitto container
+```
+docker exec -it mosquitto bin/sh
+```
+
+When inside the container we need to go to the folder mosquitto/conf:
+```
+cd mosquitto/conf
+```
+
+After this we can create the  CA certificate:
+* First define the following variables:
+```
+COUNTRY="PT" 
+STATE="MAFRA"
+CITY="LISBON"
+ORGANIZATION="My Company"
+ORG_UNIT="IT Department"
+COMMON_NAME="CA"
+```
+
+* After that we can run this command to create the `ca.key` and `ca.crt`:
+```
+openssl req -new -x509 -days 3650 -extensions v3_ca -keyout ca.key -out ca.crt -nodes -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=$ORGANIZATION/OU=$ORG_UNIT/CN=$COMMON_NAME"
+```
+
+Now that the `ca.key` and `ca.crt` are create lets create the `server.crt` and `server.key`
+
+Inside the folder we will run the bash script `generate_openssl_config.sh` (this will create a file openssl.cnf): 
+```
+sh generate_openssl_config.sh
+```
+
+* Now lets define the following variables:
+```
+COUNTRY="PT" 
+STATE="MAFRA"
+CITY="LISBON"
+ORGANIZATION="My Company"
+ORG_UNIT="IT Department"
+COMMON_NAME="MQTT Broker"
+```
+
+* After that we can run this command to create the `server.key` and `server.crt`:
+```
+openssl req -new -out server.csr -keyout server.key -nodes -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=$ORGANIZATION/OU=$ORG_UNIT/CN=$COMMON_NAME" -config openssl.cnf
+```
+
+* And now lets sign them using our CA:
+```
+openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 3650 -extensions v3_req -extfile openssl.cnf
+```
+
+Now that we have our certificates we have to restart the container:
+* first type exit to exit the container:
+```
+exit
+```
+
+And then:
+```
+docker restart mosquitto 
+```
+
+This will start the broker with the certificates we just created. 
+
+Now we have to start the iwatch container we create the certificates for the client and sign them with our CA.
+
+Start the iwatch container:
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
+
 # Create a MQTT Connection
 We need to get the Mosquitto Ip Adress from the container running Mosquitto. 
 For that we need to use this to get the container ip:
