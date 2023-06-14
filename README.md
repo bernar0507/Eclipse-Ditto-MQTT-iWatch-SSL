@@ -124,8 +124,8 @@ curl -X POST \
   "targets": [{
                 "address": "org.Iotp2c:iwatch/things/twin/events/modified",
                 "topics": [
-                "//things/twin/events",
-                "//things/live/messages"
+                "_/_/things/twin/events",
+                "_/_/things/live/messages"
                 ],
                 "authorizationContext": ["nginx:ditto"],
                 "qos": 0
