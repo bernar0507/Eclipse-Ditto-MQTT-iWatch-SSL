@@ -157,18 +157,46 @@ This will start the broker with the certificates we just created.
 Now we have to start the iwatch container we create the certificates for the client and sign them with our CA.
 
 Start the iwatch container:
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------
+```
+cd iwatch/dockerfile
+```
+
+```
+docker build --no-cache  -t iwatch_image -f Dockerfile.iwatch .
+```
+
+```
+docker run -it --name iwatch-container --network docker_default iwatch_image
+```
+
+When inside the container we need to go to the folder mosquitto/conf:
+```
+cd Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto/conf
+```
+
+After this we can create the  client certificate:
+* First define the following variables:
+```
+COUNTRY="PT" 
+STATE="MAFRA"
+CITY="LISBON"
+ORGANIZATION="My Company"
+ORG_UNIT="IT Department"
+COMMON_NAME="iwatch Client"
+```
+
+* Create the client key and certificate request files:
+```
+openssl req -new -out client.csr -keyout client.key -nodes -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=$ORGANIZATION/OU=$ORG_UNIT/CN=$COMMON_NAME" -config openssl.cnf
+```
+
+* After that we can sign them with the CA certificate:
+```
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 3650 -extensions v3_req -extfile openssl.cnf
+```
 
 # Create a MQTT Connection
-We need to get the Mosquitto Ip Adress from the container running Mosquitto. 
+We need to get the Mosquitto Ip address from the container running Mosquitto. 
 For that we need to use this to get the container ip:
 ```
 mosquitto_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mosquitto)
@@ -242,19 +270,11 @@ curl -X POST \
 ```
 
 # Send data to Eclipse Ditto from iWatch
-This will be handled in the `Dockerfile.iwatch`, so we don't need to install anything locally.
-Just do the following:
+Now that we have the connection create and everything else ready (certificates from both sides), we can send data to Ditto:
 
+* Go to the iwatch tab and run in the folder app/Eclipse-Ditto-MQTT-iWatch-SSL/iwatch:
 ```
-cd iwatch/dockerfile
-```
-
-```
-docker build --no-cache  -t iwatch_image -f Dockerfile.iwatch .
-```
-
-```
-docker run -it --name iwatch-container --network docker_default iwatch_image
+python3 send_data_iwatch.py
 ```
 
 # Test if the digital twin is being updated
@@ -262,7 +282,6 @@ To see if the twin is being updated with the data send by script we can run the 
 ```
 curl -u ditto:ditto -X GET 'http://localhost:8080/api/2/things/org.Iotp2c:iwatch'
 ```
-
 
 # Payload mapping
 Depending on your IoT-Device, you may have to map the payload that you send to Eclipse Ditto. Because IoT-Devices are often limited due to their memory, it's reasonable not to send fully qualified Ditto-Protocol messages from the IoT-Device. 
