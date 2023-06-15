@@ -104,6 +104,11 @@ ORG_UNIT="IT Department"
 COMMON_NAME="CA"
 ```
 
+Install openssl:
+```
+apk add openssl
+```
+
 * After that we can run this command to create the `ca.key` and `ca.crt`:
 ```
 openssl req -new -x509 -days 3650 -extensions v3_ca -keyout ca.key -out ca.crt -nodes -subj "/C=$COUNTRY/ST=$STATE/L=$CITY/O=$ORGANIZATION/OU=$ORG_UNIT/CN=$COMMON_NAME"
