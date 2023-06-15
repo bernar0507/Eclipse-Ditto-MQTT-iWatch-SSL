@@ -27,7 +27,7 @@ def on_message(client, userdata, msg):
 def send_data_to_ditto(iwatch_data, client):
     # Prepare the Ditto command payload
     ditto_data = {
-        "topic": MQTT_TOPIC,
+        "topic": "org.Iotp2c/iwatch/things/twin/commands/modify",
         "path": "/",
         "value": {
             "thingId": "org.Iotp2c:iwatch",
