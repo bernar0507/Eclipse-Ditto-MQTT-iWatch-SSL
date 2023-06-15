@@ -166,7 +166,7 @@ docker build --no-cache  -t iwatch_image -f Dockerfile.iwatch .
 ```
 
 ```
-docker run -it --name iwatch-container --network docker_default iwatch_image
+docker run -it -v <PATH_TO_FOLDER>/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto:/app/Eclipse-Ditto-MQTT-iWatch-SSL/mosquitto --name iwatch-container --network docker_default iwatch_image
 ```
 
 When inside the container we need to go to the folder mosquitto/conf:
