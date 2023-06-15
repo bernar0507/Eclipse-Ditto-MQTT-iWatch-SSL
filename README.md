@@ -205,7 +205,29 @@ mosquitto_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddres
 Before we can use MQTT, we have to open a MQTT connection in Eclipse Ditto. We can do this by using DevOps Commands. In this case we need the Piggyback Commands to open a new connection (this is gonna use the `$mosquitto_ip`, defined previously).
 To use these commands we have to send a `POST Request` to the URL `http://localhost:8080/devops/piggyback/connectivity?timeout=10`.
 
+Here's how you get `<CA_CERT>`, `<CLIENT_CERT>`, `<CLIENT_KEY>`:
+
+* Save in a variable:
+```
+ca_crt=$(cat ca.crt)
+```
+
+* Print the variable:
+```
+echo $ca_crt
+```
+
+* Output:
+```
+-----BEGIN CERTIFICATE----- <CA_CERT> -----END CERTIFICATE-----
+```
+
+* Now just copy the `<CA_CERT>` part (dont select the blank spaces), and save in a e.g. text editor
+
+- You will have to repeat these steps for `<CLIENT_CERT>` and `<CLIENT_KEY>`
+
 ## Create the connection:
+Now that you have the values for `<CA_CERT>`, `<CLIENT_CERT>` and `<CLIENT_KEY>`, lets replace them in the following command
 ```
 curl -X POST \
   'http://localhost:8080/devops/piggyback/connectivity?timeout=10' \
