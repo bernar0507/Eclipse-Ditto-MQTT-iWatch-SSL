@@ -1,5 +1,6 @@
 # Eclipse-Ditto-MQTT-iWatch-SSL
-This example presents how to configure Ditto to be able update things via MQTT with SSL. In this example we will create a iWatch from a WoT TM (Web of Things Thing Model). Our Digital Twin it will be updated via MQTT, using synthetic data.
+This example presents how to configure Ditto to be able update things via MQTT with SSL. We will create an iWatch from a WoT TM (Web of Things Thing Model) in this example. Our Digital Twin will be updated via MQTT, using synthetic data.
+In this tutorial, we will ensure data security in traffic with two-factor authentication (`Username and Password` + `Certificates`). 
 
 # Requirements
 1. Clone Ditto: ```git clone https://github.com/eclipse-ditto/ditto.git```
