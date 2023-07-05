@@ -1,8 +1,7 @@
-os
 time
-subprocess
+socket
+ssl
 json
-getpass
-requests
-datetime
-csv
+numpy
+scipy
+paho-mqtt
